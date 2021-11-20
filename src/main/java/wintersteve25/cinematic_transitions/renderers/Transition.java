@@ -17,7 +17,8 @@ public class Transition extends AbstractGui {
     private final int width;
     private final int height;
 
-    private static int wait = 100;
+    private static int maxWait = 100;
+    private static int wait = maxWait;
     private static float barsHeight = 0.15F;
     private static float transitionLength = 120;
     private static int currentPosition = 0;
@@ -25,6 +26,7 @@ public class Transition extends AbstractGui {
 
     private static boolean play = false;
     private static final Minecraft minecraft = Minecraft.getInstance();
+    private static boolean hasChild = false;
 
     public Transition(MatrixStack matrixStack) {
         this.matrixStack = matrixStack;
@@ -61,7 +63,7 @@ public class Transition extends AbstractGui {
         }
 
         if (currentClosingPosition >= transitionLength) {
-            wait = 100;
+            setWait(getMaxWait());
             currentClosingPosition = 0;
             return true;
         }
@@ -129,6 +131,15 @@ public class Transition extends AbstractGui {
         Transition.barsHeight = barsHeight;
     }
 
+    public static int getMaxWait() {
+        return maxWait;
+    }
+
+    public static void setMaxWait(int maxWait) {
+        Transition.maxWait = maxWait;
+        Transition.wait = maxWait;
+    }
+
     public static int getWait() {
         return wait;
     }
@@ -152,8 +163,6 @@ public class Transition extends AbstractGui {
     public static void setCurrentClosingPosition(int currentClosingPosition) {
         Transition.currentClosingPosition = currentClosingPosition;
     }
-
-    private static boolean hasChild = false;
 
     public static void play(boolean hasChild, PopUp popup) {
         if (hasChild) {

@@ -29,15 +29,16 @@ public class ForgeClientEvents {
         }
 
         if (PopUp.shouldPlay()) {
-            PopUp popUp = PopUp.getPlay();
-            popUp.setMatrixStack(event.getMatrixStack());
-            if (popUp.render()) {
+            PopUp.getPlay().setMatrixStack(event.getMatrixStack());
+            if (PopUp.getPlay().render()) {
                 PopUp.setCurrentClosingPosition(0);
                 PopUp.setCurrentPosition(0);
                 PopUp.finishPlay();
                 return;
             }
-            event.setCanceled(true);
+            if(PopUp.shouldHideInv()) {
+                event.setCanceled(true);
+            }
         }
     }
 }
