@@ -1,4 +1,4 @@
-package wintersteve25.cinematic_transitions.events;
+package wintersteve25.cinematic_transitions;
 
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
@@ -25,7 +25,9 @@ public class ForgeClientEvents {
                 Transition.finishPlay();
                 return;
             }
-            event.setCanceled(true);
+            if(PopUp.shouldHideInv()) {
+                event.setCanceled(true);
+            }
         }
 
         if (PopUp.shouldPlay()) {

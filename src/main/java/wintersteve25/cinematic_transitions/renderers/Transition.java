@@ -164,9 +164,8 @@ public class Transition extends AbstractGui {
         Transition.currentClosingPosition = currentClosingPosition;
     }
 
-    public static void play(boolean hasChild, PopUp popup) {
+    public static void play(boolean hasChild) {
         if (hasChild) {
-            PopUp.play(popup);
             Transition.hasChild = true;
         }
         play = true;

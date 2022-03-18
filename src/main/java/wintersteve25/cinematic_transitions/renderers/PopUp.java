@@ -1,13 +1,16 @@
 package wintersteve25.cinematic_transitions.renderers;
 
+import com.blamejared.crafttweaker.api.CraftTweakerAPI;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.StringTextComponent;
 import org.lwjgl.opengl.GL11;
+import wintersteve25.cinematic_transitions.registries.PopUpRegistryManager;
 
-public class PopUp extends AbstractGui {
+public class PopUp extends Screen {
 
     private MatrixStack matrixStack;
     private final int iWidth;
@@ -17,10 +20,11 @@ public class PopUp extends AbstractGui {
     private final PopUpType entryType;
     private final PopUpType exitType;
     private final boolean hasParent;
-
-    private final int wWidth;
-    private final int wHeight;
+    private final ResourceLocation registryName;
     private final Minecraft minecraft;
+
+    private int wWidth;
+    private int wHeight;
 
     private static PopUp play = null;
     private static int maxWait = 100;
@@ -40,7 +44,9 @@ public class PopUp extends AbstractGui {
     private static float translateModZ = 0;
     private static boolean enableTranslateMod = false;
 
-    public PopUp(int iWidth, int iHeight, ResourceLocation texture, PopUpType entryType, PopUpType exitType, boolean hasParent, boolean langSupport) {
+    public PopUp(ResourceLocation registryName, int iWidth, int iHeight, ResourceLocation texture, PopUpType entryType, PopUpType exitType, boolean hasParent, boolean langSupport) {
+        super(StringTextComponent.EMPTY);
+        this.registryName = registryName;
         this.iWidth = iWidth;
         this.iHeight = iHeight;
         this.entryType = entryType;
@@ -50,10 +56,14 @@ public class PopUp extends AbstractGui {
         this.wWidth = minecraft.getMainWindow().getScaledWidth();
         this.wHeight = minecraft.getMainWindow().getScaledHeight();
         this.texture = langSupport ? new ResourceLocation(texture.getNamespace(), texture.getPath() + "_" + minecraft.getLanguageManager().getCurrentLanguage().getCode() + ".png") : new ResourceLocation(texture.getNamespace(), texture.getPath() + ".png");
-        this.ogTexture = texture;
+        this.ogTexture = new ResourceLocation(texture.getNamespace(), texture.getPath() + ".png");
     }
 
     public boolean render() {
+        // HACK: This has to be done this way since init is not called. so there is no other way I can think of to change the value when changing window size
+        this.wWidth = minecraft.getMainWindow().getScaledWidth();
+        this.wHeight = minecraft.getMainWindow().getScaledHeight();
+
         if (currentPosition >= transitionLength) {
             return renderClosing();
         }
@@ -98,11 +108,13 @@ public class PopUp extends AbstractGui {
         RenderSystem.color4f(1, 1, 1, 1);
         bindTexture();
 
+        runModifier(true);
         if (!hasParent) {
-            blit(matrixStack, (wWidth - iWidth) / 2, wHeight / 128, 0, 0, iWidth, iHeight);
+            blit(matrixStack, (wWidth - iWidth) / 2, wHeight / 128, getBlitOffset(), 0, 0, iWidth, iHeight, iHeight, iWidth);
         } else {
-            blit(matrixStack, (wWidth - iWidth) / 2, Transition.getBarsHeight() - wHeight / 12, 0, 0, iWidth, iHeight);
+            blit(matrixStack, (wWidth - iWidth) / 2, Transition.getBarsHeight() - wHeight / 12, getBlitOffset(),0, 0, iWidth, iHeight, iHeight, iWidth);
         }
+        runModifier(false);
 
         RenderSystem.popMatrix();
     }
@@ -120,9 +132,9 @@ public class PopUp extends AbstractGui {
                 bindTexture();
                 runModifier(true);
                 if (!hasParent) {
-                    blit(matrixStack, (wWidth - iWidth) / 2, wHeight / 128, 0, 0, iWidth, iHeight);
+                    blit(matrixStack, (wWidth - iWidth) / 2, wHeight / 128, getBlitOffset(), 0, 0, iWidth, iHeight, iHeight, iWidth);
                 } else {
-                    blit(matrixStack, (wWidth - iWidth) / 2, Transition.getBarsHeight() - wHeight / 12, 0, 0, iWidth, iHeight);
+                    blit(matrixStack, (wWidth - iWidth) / 2, Transition.getBarsHeight() - wHeight / 12, getBlitOffset(),0, 0, iWidth, iHeight, iHeight, iWidth);
                 }
                 runModifier(false);
                 RenderSystem.disableBlend();
@@ -137,9 +149,9 @@ public class PopUp extends AbstractGui {
                 bindTexture();
                 runModifier(true);
                 if (!hasParent) {
-                    blit(matrixStack, (wWidth - iWidth) / 2, wHeight / 128, 0, 0, iWidth, iHeight);
+                    blit(matrixStack, (wWidth - iWidth) / 2, wHeight / 128, getBlitOffset(), 0, 0, iWidth, iHeight, iHeight, iWidth);
                 } else {
-                    blit(matrixStack, (wWidth - iWidth) / 2, Transition.getBarsHeight() - wHeight / 12, 0, 0, iWidth, iHeight);
+                    blit(matrixStack, (wWidth - iWidth) / 2, Transition.getBarsHeight() - wHeight / 12, getBlitOffset(), 0, 0, iWidth, iHeight, iHeight, iWidth);
                 }
                 runModifier(false);
                 RenderSystem.popMatrix();
@@ -149,7 +161,7 @@ public class PopUp extends AbstractGui {
 
     private void bindTexture() {
         if (!minecraft.getResourceManager().hasResource(texture)) {
-            minecraft.getTextureManager().bindTexture(new ResourceLocation(ogTexture.getNamespace(), ogTexture.getPath() + ".png"));
+            minecraft.getTextureManager().bindTexture(ogTexture);
         } else {
             minecraft.getTextureManager().bindTexture(texture);
         }
@@ -267,6 +279,14 @@ public class PopUp extends AbstractGui {
         PopUp.currentClosingPosition = currentClosingPosition;
     }
 
+    public static float getTransitionLength() {
+        return transitionLength;
+    }
+
+    public static void setTransitionLength(float transitionLength) {
+        PopUp.transitionLength = transitionLength;
+    }
+
     public static PopUp getPlay() {
         return play;
     }
@@ -275,8 +295,16 @@ public class PopUp extends AbstractGui {
         play = popUp;
     }
 
+    public static PopUp play(ResourceLocation popUp) {
+        play = PopUpRegistryManager.getPopUpWithRegistryName(popUp);
+        return play;
+    }
+
     public static void finishPlay() {
         play = null;
+        disableScaleModifier();
+        disableColorModifier();
+        disableTranslateModifier();
     }
 
     public static boolean shouldPlay() {
@@ -286,5 +314,9 @@ public class PopUp extends AbstractGui {
     private float clamp(float num, float min, float max) {
         if (num < min) return min;
         return Math.min(num, max);
+    }
+
+    public ResourceLocation getRegistryName() {
+        return registryName;
     }
 }

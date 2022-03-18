@@ -28,6 +28,9 @@ minecraft {
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
 
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+
             mods {
                 cinematic_transitions {
                     source sourceSets.main
@@ -40,6 +43,9 @@ minecraft {
 
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
+
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
 
             mods {
                 cinematic_transitions {
@@ -73,7 +79,25 @@ repositories {
         url "https://www.cursemaven.com"
     }
 
-    maven { url 'https://maven.blamejared.com' }
+    maven {
+        url 'https://maven.blamejared.com'
+    }
+
+//    maven {
+//        // Shedaniel's maven (Architectury API)
+//        url = "https://maven.architectury.dev"
+//        content {
+//            includeGroup "me.shedaniel"
+//        }
+//    }
+//
+//    maven {
+//        // saps.dev Maven (KubeJS and Rhino)
+//        url = "https://maven.saps.dev/minecraft"
+//        content {
+//            includeGroup "dev.latvian.mods"
+//        }
+//    }
 
     mavenLocal()
 }
@@ -81,6 +105,11 @@ repositories {
 dependencies {
     minecraft 'net.minecraftforge:forge:1.16.5-36.2.0'
     compile fg.deobf("com.blamejared.crafttweaker:CraftTweaker-1.16.5:7.1.2.455")
+    compile fg.deobf("curse.maven:fclib-497404:3567946")
+
+//    implementation fg.deobf("dev.latvian.mods:kubejs-forge:${kubejs_version}")
+//    implementation fg.deobf("dev.latvian.mods:rhino:${rhino_version}")
+//    implementation fg.deobf("me.shedaniel:architectury-forge:${architectury_version}")
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..
