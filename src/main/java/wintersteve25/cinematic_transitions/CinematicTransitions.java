@@ -16,7 +16,6 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -32,8 +31,6 @@ import wintersteve25.cinematic_transitions.registries.PopUpRegistryManager;
 import wintersteve25.cinematic_transitions.renderers.PopUp;
 import wintersteve25.cinematic_transitions.renderers.PopUpType;
 import wintersteve25.cinematic_transitions.renderers.Transition;
-
-import java.util.Objects;
 
 @Mod(CinematicTransitions.MODID)
 public class CinematicTransitions {
@@ -59,7 +56,7 @@ public class CinematicTransitions {
         JsonConfigBuilder<SimpleObjectMap> builder = new JsonConfigBuilder<>(SimpleObjectMap.class, new ResourceLocation(MODID, "popup_registry"));
         for (Biome biome : ForgeRegistries.BIOMES) {
             if (biome.getRegistryName() == null) continue;
-            builder.addConfigObjectToList("popups", new SimpleConfigObject(new JsonPopUp("cinematic_transition:biomes/" + biome.getRegistryName().getPath(), 256, 256, "cinematic_transitions:textures/biomes/" + biome.getRegistryName().toString().replace(':', '/'), PopUpType.FADE, PopUpType.FADE, false, true)), false);
+            builder.addConfigObjectToList("popups", new SimpleConfigObject(new JsonPopUp("cinematic_transition:biomes/" + biome.getRegistryName().toString().replace(':', '/'), 256, 256, "cinematic_transitions:textures/biomes/" + biome.getRegistryName().toString().replace(':', '/'), PopUpType.FADE, PopUpType.FADE, false, true)), false);
         }
         JSON_REGISTRY = builder.build();
     }
@@ -101,10 +98,10 @@ public class CinematicTransitions {
                     switch (listener.getType()) {
                         case BIOME:
                             Biome biome = player.getEntityWorld().getBiome(player.getPosition());
-                            if ((lastVisitedBiome == null || !lastVisitedBiome.equals(biome.getRegistryName())) && Objects.equals(biome.getRegistryName(), new ResourceLocation(listener.getRegistryName()))) {
+                            if (biome.getRegistryName() == null) return;
+                            if ((lastVisitedBiome == null || !lastVisitedBiome.equals(biome.getRegistryName())) && biome.getRegistryName().toString().equals(listener.getRegistryName())) {
                                 playListener(listener);
                             }
-                            lastVisitedBiome = biome.getRegistryName();
                             break;
                         case STRUCTURE:
                             Structure<?> structure = ForgeRegistries.STRUCTURE_FEATURES.getValue(new ResourceLocation(listener.getRegistryName()));
@@ -120,6 +117,10 @@ public class CinematicTransitions {
                             break;
                     }
                 }
+
+                Biome biome = player.getEntityWorld().getBiome(player.getPosition());
+                if (biome.getRegistryName() == null) return;
+                lastVisitedBiome = biome.getRegistryName();
             }
         }
     }

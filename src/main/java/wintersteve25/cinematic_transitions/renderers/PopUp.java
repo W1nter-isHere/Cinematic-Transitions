@@ -1,6 +1,5 @@
 package wintersteve25.cinematic_transitions.renderers;
 
-import com.blamejared.crafttweaker.api.CraftTweakerAPI;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
@@ -27,7 +26,7 @@ public class PopUp extends Screen {
     private int wHeight;
 
     private static PopUp play = null;
-    private static int maxWait = 100;
+    private static int maxWait = 150;
     private static int wait = maxWait;
     private static int currentPosition = 0;
     private static int currentClosingPosition = 0;
@@ -292,10 +291,12 @@ public class PopUp extends Screen {
     }
 
     public static void play(PopUp popUp) {
+        if (play != null) return;
         play = popUp;
     }
 
     public static PopUp play(ResourceLocation popUp) {
+        if (play != null) return null;
         play = PopUpRegistryManager.getPopUpWithRegistryName(popUp);
         return play;
     }

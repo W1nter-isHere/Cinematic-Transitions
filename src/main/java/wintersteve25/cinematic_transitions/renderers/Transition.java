@@ -17,7 +17,7 @@ public class Transition extends AbstractGui {
     private final int width;
     private final int height;
 
-    private static int maxWait = 100;
+    private static int maxWait = 150;
     private static int wait = maxWait;
     private static float barsHeight = 0.15F;
     private static float transitionLength = 120;
